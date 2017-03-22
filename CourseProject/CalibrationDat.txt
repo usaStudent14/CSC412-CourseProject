@@ -1,0 +1,18 @@
+Sensor Readings:
+
+On Black	Left	Right
+_______________________________
+100%		530	560
+50%		400	430
+0%		350	400
+
+
+
+Steering motor:
+0 degrees = wheels centered
+-60 degrees = wheels far left
+60 degrees = wheels far right
+
+
+Drive speed:
+???
