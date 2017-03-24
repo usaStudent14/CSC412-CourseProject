@@ -33,6 +33,6 @@ void setup() {
 
 void loop() {
   // Start drive motors
-  motorPilot.drive(100);
+ motorPilot.drive(20);
 }
 

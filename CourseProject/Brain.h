@@ -25,7 +25,7 @@ class Brain
         float rightLightReal = 0.0;
 
         void think();
-        int clamp(int lower, int upper);
+        int clamp(int lower, int value, int upper);
 };
 
 #endif

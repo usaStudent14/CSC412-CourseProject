@@ -1,18 +1,22 @@
 #include "Pilot.h"
 
-Pilot:: Pilot(NXShield& nxt, NXTLight r_l, NXTLight l_l, NXTUS sonar){
+Pilot:: Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& l_l, NXTUS& sonar){
   pnxshield = &nxt;
-  brain.setLeftLight(l_l);
-  brain.setRightLight(r_l);
-  brain.setSonar(sonar);
+  brain.leftLight = &l_l;
+  brain.rightLight = &r_l;
+  brain.sonar = &sonar;
+  currentSpeed = 0;
+  steerAngle = 0;
   maxSpeed = 100;
 }
 
-Pilot:: Pilot(NXShield& nxt, NXTLight r_l, NXTLight l_l, NXTUS sonar, int ms){
+Pilot:: Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& l_l, NXTUS& sonar, int ms){
   pnxshield = &nxt;
-  brain.setLeftLight(&l_l);
-  brain.setRightLight(&r_l);
-  brain.setSonar(&sonar);
+  brain.leftLight = &l_l;
+  brain.rightLight = &r_l;
+  brain.sonar = &sonar;
+  currentSpeed = 0;
+  steerAngle = 0;
   maxSpeed = ms;
 }
 
@@ -20,7 +24,8 @@ Pilot:: Pilot(NXShield& nxt, NXTLight r_l, NXTLight l_l, NXTUS sonar, int ms){
 void Pilot::drive(int initialSpeed){
   setSpeed(initialSpeed);
   brain.think();
-  
+
+  turn(brain.turnDeltaReal, 100);
 }
 
 void Pilot::fullStop(){
@@ -28,7 +33,6 @@ void Pilot::fullStop(){
 }
 
 void Pilot::slowStop(){
-  int currentSpeed = brain.motorReal;
   while(currentSpeed >= 1){
     currentSpeed = currentSpeed - (currentSpeed/8);
     pnxshield->bank_a.motorRunUnlimited(SH_Motor_1, SH_Direction_Forward, currentSpeed);
@@ -38,12 +42,10 @@ void Pilot::slowStop(){
 }
 
 void Pilot::setSpeed(int s){
-  int currentSpeed = brain.motorReal;
   if(s > maxSpeed || s == -1) 
     currentSpeed = maxSpeed;
    else
     currentSpeed = s;
-  brain.motorReal = s;
   // Set drive motor running
   pnxshield->bank_a.motorRunUnlimited(SH_Motor_1, SH_Direction_Forward, currentSpeed);
   
@@ -51,33 +53,24 @@ void Pilot::setSpeed(int s){
 
 // Recieves a degree amount to turn; left degrees are negative, right are positive;
 // Degree 0 is at center steer
-void Pilot::turn(int turnDelta, int turnSpeed){
-  int turnAngle = steerAngle + turnDelta;
-  // Make sure no overturning
-  if(turnAngle < -60){
-    turnDelta = -60  - steerAngle;
-    steerAngle = -60;
-  } else if(turnAngle > 60){
-    turnDelta = 60 - steerAngle;
-    steerAngle = 60;
-  }else {
-    steerAngle = steerAngle + turnDelta;
-  }
+void Pilot::turn(int heading, int turnSpeed){
   
-  if(turnDelta <0){
+  if(heading < steerAngle){// Left turn
    pnxshield->bank_a.motorRunDegrees(SH_Motor_2, 
                                       SH_Direction_Reverse, 
                                       turnSpeed, 
-                                      abs(turnDelta), 
+                                      2, 
                                       SH_Completion_Dont_Wait,
                                       SH_Next_Action_Brake);
-  }else if(turnDelta > 0){
+   steerAngle = steerAngle - 2;
+  }else if(heading > steerAngle){// Right turn
     pnxshield->bank_a.motorRunDegrees(SH_Motor_2, 
                                       SH_Direction_Forward, 
                                       turnSpeed, 
-                                      abs(turnDelta), 
+                                      2, 
                                       SH_Completion_Dont_Wait,
                                       SH_Next_Action_Brake);
+    steerAngle = steerAngle + 2;
   }
 }
 
