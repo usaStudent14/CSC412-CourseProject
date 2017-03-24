@@ -2,7 +2,6 @@
 #define BRAIN_H
 
 #include <Arduino.h>
-#include <NXShield.h>
 #include <NXTLight.h>
 #include <NXTUS.h>
 
@@ -19,7 +18,6 @@ class Brain
         NXTLight *leftLight;
         NXTLight *rightLight;
         NXTUS    *sonar;
-        NXShield *shield;
 
         int   sonarReal      = 0;
         int   turnDeltaReal  = 0;
