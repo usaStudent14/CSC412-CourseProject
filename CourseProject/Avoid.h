@@ -16,5 +16,6 @@ class Avoid {
     void checkLightBooleans();
     void checkObjectDistance();
     void checkSonarBoolean();
-}
+};
 
+#endif
