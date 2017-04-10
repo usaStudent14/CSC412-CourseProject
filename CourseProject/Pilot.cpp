@@ -1,20 +1,22 @@
 #include "Pilot.h"
 
-Pilot:: Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& l_l, NXTUS& sonar){
+Pilot:: Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& c_l, NXTLight& l_l, NXTUS& sonar){
   pnxshield = &nxt;
-  brain.leftLight = &l_l;
-  brain.rightLight = &r_l;
-  brain.sonar = &sonar;
+  brain.m_leftLight = &l_l;
+  brain.m_centerLight = &c_l;
+  brain.m_rightLight = &r_l;
+  brain.m_sonar = &sonar;
   currentSpeed = 0;
   steerAngle = 0;
   maxSpeed = 100;
 }
 
-Pilot:: Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& l_l, NXTUS& sonar, int ms){
+Pilot:: Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& c_l, NXTLight& l_l, NXTUS& sonar, int ms){
   pnxshield = &nxt;
-  brain.leftLight = &l_l;
-  brain.rightLight = &r_l;
-  brain.sonar = &sonar;
+  brain.m_leftLight = &l_l;
+  brain.m_centerLight = &c_l;
+  brain.m_rightLight = &r_l;
+  brain.m_sonar = &sonar;
   currentSpeed = 0;
   steerAngle = 0;
   maxSpeed = ms;
@@ -25,7 +27,7 @@ void Pilot::drive(int initialSpeed){
   setSpeed(initialSpeed);
   brain.think();
 
-  turn(brain.turnDeltaReal, 100);
+  turn(brain.targetHeading, 100);
 }
 
 void Pilot::fullStop(){
@@ -54,23 +56,22 @@ void Pilot::setSpeed(int s){
 // Recieves a degree amount to turn; left degrees are negative, right are positive;
 // Degree 0 is at center steer
 void Pilot::turn(int heading, int turnSpeed){
-  
-  if(heading < steerAngle){// Left turn
+  if((heading < steerAngle)) {// Left turn
    pnxshield->bank_a.motorRunDegrees(SH_Motor_2, 
                                       SH_Direction_Reverse, 
                                       turnSpeed, 
                                       2, 
-                                      SH_Completion_Dont_Wait,
+                                      SH_Completion_Wait_For,
                                       SH_Next_Action_Brake);
-   steerAngle = steerAngle - 2;
-  }else if(heading > steerAngle){// Right turn
+   steerAngle = Brain::clamp(-60, steerAngle - 2, 60);
+  }else if((heading > steerAngle)) {// Right turn
     pnxshield->bank_a.motorRunDegrees(SH_Motor_2, 
-                                      SH_Direction_Forward, 
-                                      turnSpeed, 
-                                      2, 
-                                      SH_Completion_Dont_Wait,
+                                      SH_Direction_Forward,
+                                      turnSpeed,
+                                      2,
+                                      SH_Completion_Wait_For,
                                       SH_Next_Action_Brake);
-    steerAngle = steerAngle + 2;
+    steerAngle = Brain::clamp(-60, steerAngle + 2, 60);
   }
 }
 

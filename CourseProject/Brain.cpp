@@ -6,48 +6,59 @@
  */
 void Brain::think()
 {
-    int leftLight  = this->leftLight->readRaw();
-    int rightLight = this->rightLight->readRaw();
+  int leftLight   = this->m_leftLight->readRaw();
+  int centerLight = this->m_centerLight->readRaw();
+  int rightLight  = this->m_rightLight->readRaw();
 
-    this->leftLightReal  = (float) (leftLight - Brain::MIN_LEFT_LIGHT) / (Brain::MAX_LEFT_LIGHT - Brain::MIN_LEFT_LIGHT);
-    this->rightLightReal = (float) (rightLight - Brain::MIN_RIGHT_LIGHT) / (Brain::MAX_RIGHT_LIGHT - Brain::MIN_RIGHT_LIGHT);
-    
-    this->sonarReal = this->sonar->getDist();
+  if(centerLight > Brain::THRESHOLD)
+  {
+    this->leftFlag   = false;
+    this->centerFlag = true;
+    this->rightFlag  = false;
+  }
 
-    int leftDelta  = 0;
-    int rightDelta = 0;
+  if(leftLight > Brain::THRESHOLD)
+  {
+    this->leftFlag   = true;
+    this->centerFlag = false;
+    this->rightFlag  = false;
+  }
 
-    if(this->leftLightReal > 0.0)
-    {
-      leftDelta = -1 * (this->leftLightReal * Brain::MAX_TURN_DELTA);
-    }
+  if(rightLight > Brain::THRESHOLD)
+  {
+    this->leftFlag   = false;
+    this->centerFlag = false;
+    this->rightFlag  = true;
+  }
 
-    if(this->rightLightReal > 0.0)
-    {
-      rightDelta = 1 * (this->rightLightReal * Brain::MAX_TURN_DELTA);
-    }
+  Serial.print("L: "); Serial.println(this->leftFlag);
+  Serial.print("C: "); Serial.println(this->centerFlag);
+  Serial.print("R: "); Serial.println(this->rightFlag);
 
-    this->turnDeltaReal = clamp(Brain::MIN_TURN_DELTA, leftDelta + rightDelta, Brain::MAX_TURN_DELTA);
+  if(this->leftFlag)
+  {
+    this->targetHeading = -60;
+  }
 
-    return;
+  if(this->centerFlag)
+  {
+    this->targetHeading = 0;
+  }
+
+  if(this->rightFlag)
+  {
+    this->targetHeading = 60;
+  }
 }
 
-/**
- * clamps a value between and upper and lower bound inclusivly
- */
 int Brain::clamp(int lower, int value, int upper)
 {
-  if(value > upper)
-  {
-    return upper;
-  }
-  
   if(value < lower)
-  {
     return lower;
-  }
-  
+
+  if(value > upper)
+    return upper;
+
   return value;
 }
-
 

@@ -16,7 +16,7 @@ void Avoid::getLights() {
 }
 
 void Avoid::checkLightBooleans() {
- // Brain.think();
+  //Brain.think();
 }
 
 void Avoid::checkObjectDistance() {
