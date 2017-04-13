@@ -18,8 +18,8 @@ void setup() {
 
   // Initialize NXT components
   nxshield.init(SH_HardwareI2C);
-  r_Light.init(&nxshield, SH_BBS2);
-  l_Light.init(&nxshield, SH_BBS1);
+  r_Light.init(&nxshield, SH_BBS1);
+  l_Light.init(&nxshield, SH_BAS2);
   proxSensor.init(&nxshield, SH_BAS2);
   
   r_Light.setReflected();
@@ -33,6 +33,15 @@ void setup() {
 
 void loop() {
   // Start drive motors
- motorPilot.drive(20);
+ motorPilot.drive(100);
+// int light1read = l_Light.readRaw();
+// int light2read = r_Light.readRaw();
+//
+// Serial.print("Left: ");
+// Serial.println(light1read);
+// Serial.print("Right: ");
+// Serial.println(light2read);
+// Serial.print("Difference: ");
+// Serial.println(light1read-light2read);
 }
 

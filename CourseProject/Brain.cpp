@@ -6,11 +6,11 @@
  */
 void Brain::think()
 {
-    int leftLight  = this->leftLight->readRaw();
-    int rightLight = this->rightLight->readRaw();
+    int leftLight  = Brain::clamp(this->leftLight->readRaw(), Brain::MIN_LEFT_LIGHT, Brain::MAX_LEFT_LIGHT);
+    int rightLight = Brain::clamp(this->rightLight->readRaw(), Brain::MIN_RIGHT_LIGHT, Brain::MAX_RIGHT_LIGHT);
 
-    this->leftLightReal  = (float) (leftLight - Brain::MIN_LEFT_LIGHT) / (Brain::MAX_LEFT_LIGHT - Brain::MIN_LEFT_LIGHT);
-    this->rightLightReal = (float) (rightLight - Brain::MIN_RIGHT_LIGHT) / (Brain::MAX_RIGHT_LIGHT - Brain::MIN_RIGHT_LIGHT);
+    this->leftLightReal  = (double) (leftLight - Brain::MIN_LEFT_LIGHT) / (Brain::MAX_LEFT_LIGHT - Brain::MIN_LEFT_LIGHT);
+    this->rightLightReal = (double) (rightLight - Brain::MIN_RIGHT_LIGHT) / (Brain::MAX_RIGHT_LIGHT - Brain::MIN_RIGHT_LIGHT);
     
     this->sonarReal = this->sonar->getDist();
 
@@ -19,35 +19,27 @@ void Brain::think()
 
     if(this->leftLightReal > 0.0)
     {
-      leftDelta = -1 * (this->leftLightReal * Brain::MAX_TURN_DELTA);
+      leftDelta = -1 * (pow(this->leftLightReal, 2) * Brain::MAX_TURN);
     }
 
     if(this->rightLightReal > 0.0)
     {
-      rightDelta = 1 * (this->rightLightReal * Brain::MAX_TURN_DELTA);
+      rightDelta = 1 * (pow(this->rightLightReal, 2) * Brain::MAX_TURN);
     }
 
-    this->turnDeltaReal = clamp(Brain::MIN_TURN_DELTA, leftDelta + rightDelta, Brain::MAX_TURN_DELTA);
+    this->turnDeltaReal = Brain::clamp(leftDelta + rightDelta, Brain::MIN_TURN, Brain::MAX_TURN);
 
     return;
 }
 
-/**
- * clamps a value between and upper and lower bound inclusivly
- */
-int Brain::clamp(int lower, int value, int upper)
+int Brain::clamp(int value, int lower, int upper)
 {
-  if(value > upper)
-  {
-    return upper;
-  }
-  
   if(value < lower)
-  {
     return lower;
-  }
-  
+
+  if(value > upper)
+    return upper;
+
   return value;
 }
-
 

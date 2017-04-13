@@ -10,6 +10,8 @@ class Pilot {
 
   private:
     NXShield * pnxshield;
+    NXTLight * pNxLight_1;
+    NXTLight * pNxLight_2;
     int maxSpeed;
     int currentSpeed;
     int steerAngle;

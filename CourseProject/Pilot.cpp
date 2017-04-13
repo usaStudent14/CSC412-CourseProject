@@ -2,6 +2,8 @@
 
 Pilot:: Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& l_l, NXTUS& sonar){
   pnxshield = &nxt;
+  pNxLight_1 = &l_l;
+  pNxLight_2 = &r_l;
   brain.leftLight = &l_l;
   brain.rightLight = &r_l;
   brain.sonar = &sonar;
@@ -12,6 +14,8 @@ Pilot:: Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& l_l, NXTUS& sonar){
 
 Pilot:: Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& l_l, NXTUS& sonar, int ms){
   pnxshield = &nxt;
+  pNxLight_1 = &l_l;
+  pNxLight_2 = &r_l;
   brain.leftLight = &l_l;
   brain.rightLight = &r_l;
   brain.sonar = &sonar;
@@ -23,9 +27,13 @@ Pilot:: Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& l_l, NXTUS& sonar, int ms)
 // Full driving functionality
 void Pilot::drive(int initialSpeed){
   setSpeed(initialSpeed);
-  brain.think();
-
-  turn(brain.turnDeltaReal, 100);
+  int weight = 100/initialSpeed;
+  int error = pNxLight_1->readRaw() -(pNxLight_2->readRaw()-50);
+  int motorSpeed_1 = initialSpeed - (error / weight);
+  int motorSpeed_2 = initialSpeed + (error / weight);
+  
+  pnxshield->bank_a.motorRunUnlimited(SH_Motor_1, SH_Direction_Forward, motorSpeed_1);
+  pnxshield->bank_a.motorRunUnlimited(SH_Motor_2, SH_Direction_Forward, motorSpeed_2);
 }
 
 void Pilot::fullStop(){
@@ -59,18 +67,18 @@ void Pilot::turn(int heading, int turnSpeed){
    pnxshield->bank_a.motorRunDegrees(SH_Motor_2, 
                                       SH_Direction_Reverse, 
                                       turnSpeed, 
-                                      2, 
+                                      1, 
                                       SH_Completion_Dont_Wait,
                                       SH_Next_Action_Brake);
-   steerAngle = steerAngle - 2;
+   steerAngle = steerAngle - 1;
   }else if(heading > steerAngle){// Right turn
     pnxshield->bank_a.motorRunDegrees(SH_Motor_2, 
                                       SH_Direction_Forward, 
                                       turnSpeed, 
-                                      2, 
+                                      1, 
                                       SH_Completion_Dont_Wait,
                                       SH_Next_Action_Brake);
-    steerAngle = steerAngle + 2;
+    steerAngle = steerAngle + 1;
   }
 }
 
