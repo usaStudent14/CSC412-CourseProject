@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <NXShield.h>
 #include <NXTLight.h>
+#include <NXTUS.h>
 #include "Brain.h"
 
 class Pilot {
@@ -18,8 +19,8 @@ class Pilot {
     Brain brain;
     
   public:
-    Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& l_l, NXTUS& sonar);
-    Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& l_l, NXTUS& sonar, int ms);
+    Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& c_l, NXTLight& l_l, NXTUS& sonar);
+    Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& c_l, NXTLight& l_l, NXTUS& sonar, int ms);
     void drive(int initialSpeed);
     void fullStop();
     void slowStop();

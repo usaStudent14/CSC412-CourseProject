@@ -8,9 +8,10 @@
 
 NXShield nxshield;
 NXTLight r_Light;
+NXTLight c_Light;
 NXTLight l_Light;
 NXTUS proxSensor;
-Pilot motorPilot(nxshield, r_Light, l_Light, proxSensor);
+Pilot motorPilot(nxshield, r_Light, c_Light, l_Light, proxSensor);
 
 void setup() {
   // Set serial baude rate
@@ -18,11 +19,19 @@ void setup() {
 
   // Initialize NXT components
   nxshield.init(SH_HardwareI2C);
+<<<<<<< HEAD
   r_Light.init(&nxshield, SH_BBS1);
   l_Light.init(&nxshield, SH_BAS2);
   proxSensor.init(&nxshield, SH_BAS2);
+=======
+  r_Light.init(&nxshield, SH_BBS2);
+  c_Light.init(&nxshield, SH_BAS2);
+  l_Light.init(&nxshield, SH_BBS1);
+  proxSensor.init(&nxshield, SH_BAS1);
+>>>>>>> origin/master
   
   r_Light.setReflected();
+  c_Light.setReflected();
   l_Light.setReflected();
 
   motorPilot.resetMotors();
