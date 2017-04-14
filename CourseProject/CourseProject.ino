@@ -5,52 +5,57 @@
 #include <NXTLight.h>
 #include <NXTUS.h>
 #include "Pilot.h"
+#include "Brain.h"
 
-NXShield nxshield;
-NXTLight r_Light;
-NXTLight c_Light;
-NXTLight l_Light;
-NXTUS proxSensor;
-Pilot motorPilot(nxshield, r_Light, c_Light, l_Light, proxSensor);
+NXShield shield;
+NXTLight light_l;
+NXTLight light_r;
+NXTUS    sonar;
+Brain    brain;
+Pilot    pilot;
+Avoid    avoid;
 
-void setup() {
-  // Set serial baude rate
+/**
+ * NOTE: SH_BAS1 is a dead port!
+ */
+
+void setup()
+{
+  // Configure Serial
   Serial.begin(9600);
-
-  // Initialize NXT components
-  nxshield.init(SH_HardwareI2C);
-<<<<<<< HEAD
-  r_Light.init(&nxshield, SH_BBS1);
-  l_Light.init(&nxshield, SH_BAS2);
-  proxSensor.init(&nxshield, SH_BAS2);
-=======
-  r_Light.init(&nxshield, SH_BBS2);
-  c_Light.init(&nxshield, SH_BAS2);
-  l_Light.init(&nxshield, SH_BBS1);
-  proxSensor.init(&nxshield, SH_BAS1);
->>>>>>> origin/master
+  Serial.println("setup()");
   
-  r_Light.setReflected();
-  c_Light.setReflected();
-  l_Light.setReflected();
+  // Initialize
+  Serial.println("Initializing NXT components...");
+  shield.init(SH_HardwareI2C);
+  light_l.init(&shield, SH_BAS2);
+  light_r.init(&shield, SH_BBS2);
+  sonar.init(&shield, SH_BBS1);
 
-  motorPilot.resetMotors();
+  Serial.println("Linking sensors to brain...");
+  brain.setLights(&light_l, &light_r);
+  brain.setSonar(&sonar);
+
+  Serial.println("Linking brain to avoid...");
+  avoid.setBrain(&brain);
+
+  Serial.println("Linking shield, brain, and avoid to pilot...");
+  pilot.setShield(&shield);
+  pilot.setBrain(&brain);
+  pilot.setAvoid(&avoid);
+
+  Serial.println("Initializing brain, avoid, and pilot...");
+  brain.init();
+  avoid.init();
+  pilot.init();
   
   // Wait for button press to start control loop
-  nxshield.waitForButtonPress(BTN_GO);
+  Serial.println("Waiting for go...");
+  shield.waitForButtonPress(BTN_GO);
 }
 
-void loop() {
-  // Start drive motors
- motorPilot.drive(100);
-// int light1read = l_Light.readRaw();
-// int light2read = r_Light.readRaw();
-//
-// Serial.print("Left: ");
-// Serial.println(light1read);
-// Serial.print("Right: ");
-// Serial.println(light2read);
-// Serial.print("Difference: ");
-// Serial.println(light1read-light2read);
+void loop()
+{
+  Serial.println("loop()");
+  pilot.drive(100);
 }
-

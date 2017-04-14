@@ -1,85 +1,9 @@
 #include "Brain.h"
 
 /**
- * performs all related logic to read from sensors and store the value in a
- * usable form
+ * clamp the incoming float between a lower and upper bounds inclusively
  */
-void Brain::think()
-{
-<<<<<<< HEAD
-    int leftLight  = Brain::clamp(this->leftLight->readRaw(), Brain::MIN_LEFT_LIGHT, Brain::MAX_LEFT_LIGHT);
-    int rightLight = Brain::clamp(this->rightLight->readRaw(), Brain::MIN_RIGHT_LIGHT, Brain::MAX_RIGHT_LIGHT);
-
-    this->leftLightReal  = (double) (leftLight - Brain::MIN_LEFT_LIGHT) / (Brain::MAX_LEFT_LIGHT - Brain::MIN_LEFT_LIGHT);
-    this->rightLightReal = (double) (rightLight - Brain::MIN_RIGHT_LIGHT) / (Brain::MAX_RIGHT_LIGHT - Brain::MIN_RIGHT_LIGHT);
-    
-    this->sonarReal = this->sonar->getDist();
-=======
-  int leftLight   = this->m_leftLight->readRaw();
-  int centerLight = this->m_centerLight->readRaw();
-  int rightLight  = this->m_rightLight->readRaw();
-
-  if(centerLight > Brain::THRESHOLD)
-  {
-    this->leftFlag   = false;
-    this->centerFlag = true;
-    this->rightFlag  = false;
-  }
->>>>>>> origin/master
-
-  if(leftLight > Brain::THRESHOLD)
-  {
-    this->leftFlag   = true;
-    this->centerFlag = false;
-    this->rightFlag  = false;
-  }
-
-<<<<<<< HEAD
-    if(this->leftLightReal > 0.0)
-    {
-      leftDelta = -1 * (pow(this->leftLightReal, 2) * Brain::MAX_TURN);
-    }
-
-    if(this->rightLightReal > 0.0)
-    {
-      rightDelta = 1 * (pow(this->rightLightReal, 2) * Brain::MAX_TURN);
-    }
-
-    this->turnDeltaReal = Brain::clamp(leftDelta + rightDelta, Brain::MIN_TURN, Brain::MAX_TURN);
-=======
-  if(rightLight > Brain::THRESHOLD)
-  {
-    this->leftFlag   = false;
-    this->centerFlag = false;
-    this->rightFlag  = true;
-  }
-
-  Serial.print("L: "); Serial.println(this->leftFlag);
-  Serial.print("C: "); Serial.println(this->centerFlag);
-  Serial.print("R: "); Serial.println(this->rightFlag);
-
-  if(this->leftFlag)
-  {
-    this->targetHeading = -60;
-  }
-
-  if(this->centerFlag)
-  {
-    this->targetHeading = 0;
-  }
->>>>>>> origin/master
-
-  if(this->rightFlag)
-  {
-    this->targetHeading = 60;
-  }
-}
-
-<<<<<<< HEAD
-int Brain::clamp(int value, int lower, int upper)
-=======
-int Brain::clamp(int lower, int value, int upper)
->>>>>>> origin/master
+float Brain::clamp(float lower, float value, float upper)
 {
   if(value < lower)
     return lower;
@@ -90,3 +14,75 @@ int Brain::clamp(int lower, int value, int upper)
   return value;
 }
 
+/**
+ * initialize the brain
+ */
+void Brain::init()
+{
+  Serial.println("Brain::init()");
+  
+  this->m_light_l->setReflected();
+  this->m_light_r->setReflected();
+  
+  return;
+}
+
+/**
+ * sets the light pointers
+ */
+void Brain::setLights(NXTLight* light_l, NXTLight* light_r)
+{
+  Serial.println("Brain::setLights()");
+  
+  this->m_light_l = light_l;
+  this->m_light_r = light_r;
+  
+  return;
+}
+
+/**
+ * sets the sonar pointer
+ */
+void Brain::setSonar(NXTUS* sonar)
+{
+  Serial.println("Brain::setSonar()");
+  
+  this->m_sonar = sonar;
+  
+  return;
+}
+
+/**
+ * processes the light sensors for structured data
+ */
+LightData Brain::getLightData()
+{
+  LightData ld;
+
+  ld.raw_l = this->m_light_l->readRaw();
+  ld.raw_r = this->m_light_r->readRaw();
+
+  float percent_l = (ld.raw_l - Brain::LIGHT_L_MIN) / (Brain::LIGHT_L_MAX - Brain::LIGHT_L_MIN);
+  float percent_r = (ld.raw_r - Brain::LIGHT_R_MIN) / (Brain::LIGHT_R_MAX - Brain::LIGHT_R_MIN);
+  
+  ld.percent_l = Brain::clamp(0.0, percent_l, 1.0);
+  ld.percent_r = Brain::clamp(0.0, percent_r, 1.0);
+
+  return ld;
+}
+
+/**
+ * processes the sonar sensor for structured data
+ */
+SonarData Brain::getSonarData()
+{
+  SonarData sd;
+
+  sd.raw = this->m_sonar->getDist();
+
+  float percent = (sd.raw - Brain::SONAR_MIN) / (Brain::SONAR_MAX - Brain::SONAR_MIN);
+
+  sd.percent = Brain::clamp(0.0, percent, 1.0);
+
+  return sd;
+}
