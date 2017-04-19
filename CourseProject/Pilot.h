@@ -6,31 +6,34 @@
 #include <NXTLight.h>
 #include <NXTUS.h>
 #include "Brain.h"
+#include "Avoid.h"
 
 class Pilot {
 
   private:
-    NXShield * pnxshield;
-    NXTLight * pNxLight_1;
-    NXTLight * pNxLight_2;
-    int maxSpeed;
-    int currentSpeed;
-    int steerAngle;
-    Brain brain;
+    NXShield* m_shield;
+    Brain*    m_brain;
+    Avoid*    m_avoid;
+
+    int maxSpeed     = 100;
+    int currentSpeed = 0;
+    int steerAngle   = 0;
     
   public:
-    Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& c_l, NXTLight& l_l, NXTUS& sonar);
-    Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& c_l, NXTLight& l_l, NXTUS& sonar, int ms);
-    void drive(int initialSpeed);
+    void init();
+    
+    void setShield(NXShield* shield);
+    void setBrain(Brain* brain);
+    void setAvoid(Avoid* avoid);
+    void resetMotors();
+    
+    void drive();
     void fullStop();
     void slowStop();
     void setSpeed(int speed);
     void turn(int heading, int turnSpeed);
     void centerSteer();
     void zeroSteer();
-    void setMaxSpeed(int ms);
-    int getMaxSpeed();
-    void resetMotors();
 };
 
 #endif

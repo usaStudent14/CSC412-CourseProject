@@ -1,91 +1,133 @@
 #include "Pilot.h"
 
-Pilot:: Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& c_l, NXTLight& l_l, NXTUS& sonar){
-  pnxshield = &nxt;
-<<<<<<< HEAD
-  pNxLight_1 = &l_l;
-  pNxLight_2 = &r_l;
-  brain.leftLight = &l_l;
-  brain.rightLight = &r_l;
-  brain.sonar = &sonar;
-=======
-  brain.m_leftLight = &l_l;
-  brain.m_centerLight = &c_l;
-  brain.m_rightLight = &r_l;
-  brain.m_sonar = &sonar;
->>>>>>> origin/master
-  currentSpeed = 0;
-  steerAngle = 0;
-  maxSpeed = 100;
+/**
+ * initialize the pilot
+ */
+void Pilot::init()
+{
+  Serial.println("Pilot::init()");
+  
+  this->resetMotors();
+
+  return;
 }
 
-Pilot:: Pilot(NXShield& nxt, NXTLight& r_l, NXTLight& c_l, NXTLight& l_l, NXTUS& sonar, int ms){
-  pnxshield = &nxt;
-<<<<<<< HEAD
-  pNxLight_1 = &l_l;
-  pNxLight_2 = &r_l;
-  brain.leftLight = &l_l;
-  brain.rightLight = &r_l;
-  brain.sonar = &sonar;
-=======
-  brain.m_leftLight = &l_l;
-  brain.m_centerLight = &c_l;
-  brain.m_rightLight = &r_l;
-  brain.m_sonar = &sonar;
->>>>>>> origin/master
-  currentSpeed = 0;
-  steerAngle = 0;
-  maxSpeed = ms;
+/**
+ * sets the shield pointer
+ */
+void Pilot::setShield(NXShield* shield)
+{
+  Serial.println("Pilot::setShield()");
+  
+  this->m_shield = shield;
+
+  return;
+}
+
+/**
+ * sets the brain pointer
+ */
+void Pilot::setBrain(Brain* brain)
+{
+  Serial.println("Pilot::setBrain()");
+  
+  this->m_brain = brain;
+
+  return;
+}
+
+/**
+ * sets the avoid pointer
+ */
+void Pilot::setAvoid(Avoid* avoid)
+{
+  Serial.println("Pilot::setAvoid()");
+
+  this->m_avoid = avoid;
+
+  return;
+}
+
+/**
+ * resets both motor banks
+ */
+void Pilot::resetMotors()
+{
+  this->m_shield->bank_a.motorReset();
+  this->m_shield->bank_b.motorReset();
+
+  return;
 }
 
 // Full driving functionality
-void Pilot::drive(int initialSpeed){
-  setSpeed(initialSpeed);
-<<<<<<< HEAD
-  int weight = 100/initialSpeed;
-  int error = pNxLight_1->readRaw() -(pNxLight_2->readRaw()-50);
-  int motorSpeed_1 = initialSpeed - (error / weight);
-  int motorSpeed_2 = initialSpeed + (error / weight);
+void Pilot::drive()
+{ 
+  LightData ld = this->m_brain->getLightData();
+
+  //int weight  = 100 / currentSpeed;
+  int error   = ld.raw_l - (ld.raw_r + this->m_brain->getSensorDelta());
+  Serial.println(error);
+  int speed_l = this->m_brain->clamp(0, currentSpeed - (error), currentSpeed*2);
+  int speed_r = this->m_brain->clamp(0, currentSpeed + (error), currentSpeed*2);
+  Serial.println(speed_l);
+  Serial.println(speed_r);
   
-  pnxshield->bank_a.motorRunUnlimited(SH_Motor_1, SH_Direction_Forward, motorSpeed_1);
-  pnxshield->bank_a.motorRunUnlimited(SH_Motor_2, SH_Direction_Forward, motorSpeed_2);
-=======
-  brain.think();
+  this->m_shield->bank_a.motorRunUnlimited(SH_Motor_1, SH_Direction_Forward, speed_l);
+  this->m_shield->bank_b.motorRunUnlimited(SH_Motor_1, SH_Direction_Forward, speed_r);
 
-  turn(brain.targetHeading, 100);
->>>>>>> origin/master
+  return;
 }
 
-void Pilot::fullStop(){
-  pnxshield->bank_a.motorStop(SH_Motor_1, SH_Next_Action_Brake);
+void Pilot::fullStop()
+{
+  this->m_shield->bank_a.motorStop(SH_Motor_1, SH_Next_Action_Brake);
+  this->m_shield->bank_b.motorStop(SH_Motor_1, SH_Next_Action_Brake);
+
+  return;
 }
 
-void Pilot::slowStop(){
-  while(currentSpeed >= 1){
-    currentSpeed = currentSpeed - (currentSpeed/8);
-    pnxshield->bank_a.motorRunUnlimited(SH_Motor_1, SH_Direction_Forward, currentSpeed);
+void Pilot::slowStop()
+{
+  while(this->currentSpeed >= 1)
+  {
+    this->currentSpeed = this->currentSpeed - (this->currentSpeed / 8);
+    
+    this->m_shield->bank_a.motorRunUnlimited(SH_Motor_1, SH_Direction_Forward, this->currentSpeed);
+    this->m_shield->bank_b.motorRunUnlimited(SH_Motor_1, SH_Direction_Forward, this->currentSpeed);
+    
     delay(50);
   }
-  pnxshield->bank_a.motorStop(SH_Motor_1, SH_Next_Action_Brake);
+  
+  this->m_shield->bank_a.motorStop(SH_Motor_1, SH_Next_Action_Brake);
+
+  return;
 }
 
-void Pilot::setSpeed(int s){
-  if(s > maxSpeed || s == -1) 
-    currentSpeed = maxSpeed;
-   else
-    currentSpeed = s;
-  // Set drive motor running
-  pnxshield->bank_a.motorRunUnlimited(SH_Motor_1, SH_Direction_Forward, currentSpeed);
+void Pilot::setSpeed(int s)
+{
+  if(s > this->maxSpeed || s == -1)
+  {
+    this->currentSpeed = this->maxSpeed;
+  }
+  else
+  {
+    this->currentSpeed = s;
+  }
   
+  this->m_shield->bank_a.motorRunUnlimited(SH_Motor_1, SH_Direction_Forward, this->currentSpeed);
+  this->m_shield->bank_b.motorRunUnlimited(SH_Motor_1, SH_Direction_Forward, this->currentSpeed);
+
+  return;
 }
 
 // Recieves a degree amount to turn; left degrees are negative, right are positive;
 // Degree 0 is at center steer
-void Pilot::turn(int heading, int turnSpeed){
-  if((heading < steerAngle)) {// Left turn
-   pnxshield->bank_a.motorRunDegrees(SH_Motor_2, 
-                                      SH_Direction_Reverse, 
-                                      turnSpeed, 
+/*
+void Pilot::turn(int heading, int turnSpeed)
+{
+  if(heading < steerAngle)
+  {
+    this->m_shield->bank_a.motorRunDegrees(SH_Motor_1, SH_Direction_Reverse, this->turnSpeed, 
 <<<<<<< HEAD
                                       1, 
                                       SH_Completion_Dont_Wait,
@@ -115,51 +157,35 @@ void Pilot::turn(int heading, int turnSpeed){
 >>>>>>> origin/master
   }
 }
+*/
 
-void Pilot::centerSteer(){
-  if(steerAngle < 0){
-    pnxshield->bank_a.motorRunDegrees(SH_Motor_2, 
-                                    SH_Direction_Forward, 
-                                    100, 
-                                    steerAngle, 
-                                    SH_Completion_Dont_Wait,
-                                    SH_Next_Action_Brake); 
-  }else if(steerAngle >0){
-    pnxshield->bank_a.motorRunDegrees(SH_Motor_2, 
-                                    SH_Direction_Reverse, 
-                                    100, 
-                                    steerAngle, 
-                                    SH_Completion_Dont_Wait,
-                                    SH_Next_Action_Brake); 
-  }
-  steerAngle = 0;
-}
-
-void Pilot::zeroSteer(){
-  pnxshield->bank_a.motorRunDegrees(SH_Motor_2, 
-                                    SH_Direction_Forward, 
-                                    100,
-                                    120, 
-                                    SH_Completion_Wait_For,
-                                    SH_Next_Action_Float);
-  delay(500);
-  pnxshield->bank_a.motorRunDegrees(SH_Motor_2, 
-                                    SH_Direction_Reverse, 
-                                    100, 
-                                    60, 
-                                    SH_Completion_Wait_For,
-                                    SH_Next_Action_Brake); 
-}
-
-void Pilot::setMaxSpeed(int ms){
-  maxSpeed = ms;
-}
-
-int Pilot::getMaxSpeed(){
-  return maxSpeed;
-}
-
-void Pilot::resetMotors()
+void Pilot::centerSteer()
 {
-  pnxshield->bank_a.motorReset();
+  if(steerAngle < 0)
+  {
+    this->m_shield->bank_a.motorRunDegrees(SH_Motor_1, SH_Direction_Forward, 100, this->steerAngle, SH_Completion_Dont_Wait, SH_Next_Action_Brake);
+    this->m_shield->bank_b.motorRunDegrees(SH_Motor_1, SH_Direction_Forward, 100, this->steerAngle, SH_Completion_Dont_Wait, SH_Next_Action_Brake);
+  }
+  else if(steerAngle >0)
+  {
+    this->m_shield->bank_a.motorRunDegrees(SH_Motor_1, SH_Direction_Reverse, 100, this->steerAngle, SH_Completion_Dont_Wait, SH_Next_Action_Brake);
+    this->m_shield->bank_b.motorRunDegrees(SH_Motor_1, SH_Direction_Reverse, 100, this->steerAngle, SH_Completion_Dont_Wait, SH_Next_Action_Brake);
+  }
+  
+  this->steerAngle = 0;
+
+  return;
+}
+
+void Pilot::zeroSteer()
+{
+  this->m_shield->bank_a.motorRunDegrees(SH_Motor_1, SH_Direction_Forward, 100, 120, SH_Completion_Wait_For, SH_Next_Action_Float);
+  this->m_shield->bank_b.motorRunDegrees(SH_Motor_1, SH_Direction_Forward, 100, 120, SH_Completion_Wait_For, SH_Next_Action_Float);
+
+  delay(500);
+  
+  this->m_shield->bank_a.motorRunDegrees(SH_Motor_1, SH_Direction_Reverse, 100, 60, SH_Completion_Wait_For, SH_Next_Action_Brake);
+  this->m_shield->bank_b.motorRunDegrees(SH_Motor_1, SH_Direction_Reverse, 100, 60, SH_Completion_Wait_For, SH_Next_Action_Brake);
+
+  return;
 }

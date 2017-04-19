@@ -4,15 +4,17 @@
 #include <Arduino.h>
 #include <NXShield.h>
 #include <NXTLight.h>
+#include "Brain.h"
 
-class Avoid {
+class Avoid
+{
   private:
-    boolean leftSensor = false;
-    boolean rightSensor = false;
-    boolean sonarSensor = false;
-    void getDistance();
-    void getLights();
+    Brain* m_brain;
   public:
+    void init();
+  
+    void setBrain(Brain* brain);
+    
     void checkLightBooleans();
     void checkObjectDistance();
     void checkSonarBoolean();

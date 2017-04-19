@@ -2,50 +2,54 @@
 #define BRAIN_H
 
 #include <Arduino.h>
-#include <Math.h>
+#include <NXShield.h>
 #include <NXTLight.h>
 #include <NXTUS.h>
 
+struct LightData
+{
+  int   raw_l = 0;
+  int   raw_r = 0;
+  float percent_l = 0.0;
+  float percent_r = 0.0;
+};
+
+struct SonarData
+{
+  int   raw     = 0;
+  float percent = 0.0;
+};
+
 class Brain
 {
-<<<<<<< HEAD
-    public:
-        static const int MIN_LEFT_LIGHT  = 350;
-        static const int MAX_LEFT_LIGHT  = 530;
-        static const int MIN_RIGHT_LIGHT = 415;
-        static const int MAX_RIGHT_LIGHT = 570;
-        static const int MIN_TURN        = -60;
-        static const int MAX_TURN        = 60;
-        
-        NXTLight *leftLight;
-        NXTLight *rightLight;
-        NXTUS    *sonar;
+  private:
+    NXTLight* m_light_l;
+    NXTLight* m_light_r;
+    NXTUS*    m_sonar;
 
-        int    sonarReal      = 0;
-        int    turnDeltaReal  = 0;
-        double leftLightReal  = 0.0;
-        double rightLightReal = 0.0;
+    int light_sensor_delta = 0;
 
-        void think();
-        int clamp(int value, int lower, int upper);
-=======
   public:
-    static const int THRESHOLD = 475;
+    static const int LIGHT_L_MIN = 0;   // TODO calibrate
+    static const int LIGHT_L_MAX = 100; // TODO calibrate
+
+    static const int LIGHT_R_MIN = 0;   // TODO calibrate
+    static const int LIGHT_R_MAX = 100; // TODO calibrate
     
-    NXTLight *m_leftLight;
-    NXTLight *m_centerLight;
-    NXTLight *m_rightLight;
-    NXTUS    *m_sonar;
+    static const int SONAR_MIN = 0;     // TODO calibrate
+    static const int SONAR_MAX = 100;   // TODO calibrate
+    
+    static float clamp(float lower, float value, float upper);
+
+    void init();
   
-    bool leftFlag   = false;
-    bool centerFlag = true;
-    bool rightFlag  = false;
+    void setLights(NXTLight* light_l, NXTLight* light_r);
+    void setSonar(NXTUS* sonar);
+
+    int getSensorDelta();
     
-    int targetHeading = 0;
-    
-    void think();
-    static int clamp(int lower, int value, int upper);
->>>>>>> origin/master
+    LightData getLightData();
+    SonarData getSonarData();
 };
 
 #endif
